@@ -33,6 +33,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const name = formData.get("name") as string;
   const videoUrl = formData.get("videoUrl") as string;
   const affiliateUrl = formData.get("affiliateUrl") as string;
+  const bonusUrl = formData.get("bonusUrl") as string || undefined;
   
   const errors: Record<string, string> = {};
   
@@ -52,17 +53,23 @@ export async function action({ request, params }: ActionFunctionArgs) {
     errors.affiliateUrl = "Please enter a valid URL";
   }
   
+  // Bonus URL is optional, but if provided, it must be valid
+  if (bonusUrl && bonusUrl.trim() !== "" && !isValidUrl(bonusUrl)) {
+    errors.bonusUrl = "Please enter a valid URL for the bonus";
+  }
+  
   if (Object.keys(errors).length > 0) {
     return json({ errors });
   }
   
-  const campaign = await updateCampaign(campaignId, { name, videoUrl, affiliateUrl });
+  const campaign = await updateCampaign(campaignId, { name, videoUrl, affiliateUrl, bonusUrl });
   
   if (!campaign) {
     throw new Response("Not Found", { status: 404 });
   }
   
-  return redirect(`/admin/campaigns/${campaign.id}`);
+  // Redirect to the admin dashboard instead of staying on the edit page
+  return redirect("/admin");
 }
 
 export default function EditCampaign() {
@@ -89,6 +96,7 @@ export default function EditCampaign() {
                   name: campaign.name,
                   videoUrl: campaign.videoUrl,
                   affiliateUrl: campaign.affiliateUrl,
+                  bonusUrl: campaign.bonusUrl,
                 }}
                 mode="edit"
               />

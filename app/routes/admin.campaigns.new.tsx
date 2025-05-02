@@ -11,6 +11,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const name = formData.get("name") as string;
   const videoUrl = formData.get("videoUrl") as string;
   const affiliateUrl = formData.get("affiliateUrl") as string;
+  const bonusUrl = formData.get("bonusUrl") as string || undefined;
   
   const errors: Record<string, string> = {};
   
@@ -30,13 +31,19 @@ export async function action({ request }: ActionFunctionArgs) {
     errors.affiliateUrl = "Please enter a valid URL";
   }
   
+  // Bonus URL is optional, but if provided, it must be valid
+  if (bonusUrl && bonusUrl.trim() !== "" && !isValidUrl(bonusUrl)) {
+    errors.bonusUrl = "Please enter a valid URL for the bonus";
+  }
+  
   if (Object.keys(errors).length > 0) {
     return json({ errors });
   }
   
-  const campaign = await createCampaign({ name, videoUrl, affiliateUrl });
+  const campaign = await createCampaign({ name, videoUrl, affiliateUrl, bonusUrl });
   
-  return redirect(`/admin/campaigns/${campaign.id}`);
+  // Redirect to the admin dashboard instead of the campaign edit page
+  return redirect("/admin");
 }
 
 export default function NewCampaign() {

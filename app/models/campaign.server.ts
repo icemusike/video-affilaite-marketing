@@ -3,6 +3,7 @@ export type Campaign = {
   name: string;
   videoUrl: string;
   affiliateUrl: string;
+  bonusUrl?: string; // Added bonus URL field
   createdAt: Date;
   updatedAt: Date;
 };
@@ -18,7 +19,17 @@ export async function getCampaign(id: string): Promise<Campaign | null> {
   return campaigns.find(campaign => campaign.id === id) || null;
 }
 
-export async function createCampaign({ name, videoUrl, affiliateUrl }: { name: string; videoUrl: string; affiliateUrl: string }): Promise<Campaign> {
+export async function createCampaign({ 
+  name, 
+  videoUrl, 
+  affiliateUrl,
+  bonusUrl 
+}: { 
+  name: string; 
+  videoUrl: string; 
+  affiliateUrl: string;
+  bonusUrl?: string;
+}): Promise<Campaign> {
   const id = Math.random().toString(36).substring(2, 9);
   const now = new Date();
   
@@ -27,6 +38,7 @@ export async function createCampaign({ name, videoUrl, affiliateUrl }: { name: s
     name,
     videoUrl,
     affiliateUrl,
+    bonusUrl,
     createdAt: now,
     updatedAt: now
   };

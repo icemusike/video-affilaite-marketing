@@ -2,6 +2,7 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import AffiliateFrame from "~/components/AffiliateFrame";
+import BonusLink from "~/components/BonusLink";
 import VideoEmbed from "~/components/VideoEmbed";
 import { getCampaign } from "~/models/campaign.server";
 import { sanitizeUrl } from "~/utils/url";
@@ -97,6 +98,9 @@ export default function CampaignPage() {
             <div>
               <AffiliateFrame affiliateUrl={campaign.affiliateUrl} />
             </div>
+            
+            {/* Display Bonus Link if available */}
+            <BonusLink bonusUrl={campaign.bonusUrl} />
           </div>
         </div>
       </div>

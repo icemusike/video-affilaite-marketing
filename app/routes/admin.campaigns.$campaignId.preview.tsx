@@ -8,7 +8,7 @@ import VideoEmbed from "~/components/VideoEmbed";
 import { getCampaign } from "~/models/campaign.server";
 import { sanitizeUrl } from "~/utils/url";
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const campaignId = params.campaignId;
   
   if (!campaignId) {
@@ -21,14 +21,21 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Not Found", { status: 404 });
   }
   
-  return json({ campaign });
+  // Get URL parameters for personalization
+  const url = new URL(request.url);
+  const nameParam = url.searchParams.get('name') || 'Preview User';
+  
+  return json({ campaign, nameParam });
 }
 
 export default function CampaignPreview() {
-  const { campaign } = useLoaderData<typeof loader>();
+  const { campaign, nameParam } = useLoaderData<typeof loader>();
   const [showRedirectMessage, setShowRedirectMessage] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [hasWatched, setHasWatched] = useState(false);
+  
+  // Personalize the campaign name by replacing {name} with the name parameter
+  const personalizedName = campaign.name.replace(/{name}/g, nameParam);
   
   const handleVideoComplete = () => {
     setShowRedirectMessage(true);
@@ -58,6 +65,10 @@ export default function CampaignPreview() {
       return () => clearTimeout(timer);
     }
   }, [showRedirectMessage, countdown]);
+  
+  // Generate example personalized URL for sharing
+  const baseUrl = window.location.origin;
+  const personalizedUrl = `${baseUrl}/c/${campaign.id}?name=John`;
   
   return (
     <div className="flex min-h-screen flex-col">
@@ -91,9 +102,25 @@ export default function CampaignPreview() {
             </div>
           </div>
           
+          {/* Personalization Info */}
+          {campaign.name.includes('{name}') && (
+            <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-yellow-800">Personalization Available</h3>
+              <p className="mt-2 text-sm text-yellow-700">
+                This campaign includes personalization. Share the URL with a name parameter to personalize the headline.
+              </p>
+              <div className="mt-3">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-yellow-800 mr-2">Example URL:</span>
+                  <code className="text-sm bg-yellow-100 px-2 py-1 rounded">{personalizedUrl}</code>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow">
             <div className="p-6">
-              <h2 className="mb-6 text-center text-2xl font-bold text-gray-900">{campaign.name}</h2>
+              <h2 className="mb-6 text-center text-2xl font-bold text-gray-900">{personalizedName}</h2>
               
               <div className="mb-8">
                 <VideoEmbed 

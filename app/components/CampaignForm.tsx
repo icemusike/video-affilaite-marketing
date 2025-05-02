@@ -93,6 +93,9 @@ export default function CampaignForm({
             className="w-full rounded border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="Enter a descriptive name for your campaign"
           />
+          <div className="mt-1 text-xs text-gray-500">
+            You can use {'{name}'} as a placeholder to personalize the headline (e.g., "Welcome {'{name}'} to our offer")
+          </div>
           {actionData?.errors?.name && (
             <div className="mt-1 text-sm text-red-600" id="name-error">
               {actionData.errors.name}

@@ -7,7 +7,7 @@ import VideoEmbed from "~/components/VideoEmbed";
 import { getCampaign } from "~/models/campaign.server";
 import { sanitizeUrl } from "~/utils/url";
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const campaignId = params.campaignId;
   
   if (!campaignId) {
@@ -20,14 +20,21 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Not Found", { status: 404 });
   }
   
-  return json({ campaign });
+  // Get URL parameters for personalization
+  const url = new URL(request.url);
+  const nameParam = url.searchParams.get('name') || '';
+  
+  return json({ campaign, nameParam });
 }
 
 export default function CampaignPage() {
-  const { campaign } = useLoaderData<typeof loader>();
+  const { campaign, nameParam } = useLoaderData<typeof loader>();
   const [showRedirectMessage, setShowRedirectMessage] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [hasWatched, setHasWatched] = useState(false);
+  
+  // Personalize the campaign name by replacing {name} with the name parameter
+  const personalizedName = campaign.name.replace(/{name}/g, nameParam);
   
   const handleVideoComplete = () => {
     setShowRedirectMessage(true);
@@ -63,7 +70,7 @@ export default function CampaignPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-lg bg-white shadow">
           <div className="p-6">
-            <h1 className="mb-6 text-center text-3xl font-bold text-gray-900">{campaign.name}</h1>
+            <h1 className="mb-6 text-center text-3xl font-bold text-gray-900">{personalizedName}</h1>
             
             <div className="mb-8">
               <VideoEmbed 

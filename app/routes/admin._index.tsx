@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import CampaignCard from "~/components/CampaignCard";
 import Header from "~/components/Header";
 import { getCampaigns } from "~/models/campaign.server";
@@ -25,6 +25,27 @@ export default function AdminIndex() {
                 Manage your video affiliate campaigns
               </p>
             </div>
+            <div className="mt-4 sm:mt-0">
+              <Link
+                to="/admin/campaigns/new"
+                className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <svg
+                  className="-ml-1 mr-2 h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                New Campaign
+              </Link>
+            </div>
           </div>
           
           <div className="mt-8">
@@ -49,8 +70,8 @@ export default function AdminIndex() {
                   Get started by creating a new campaign.
                 </p>
                 <div className="mt-6">
-                  <a
-                    href="/admin/campaigns/new"
+                  <Link
+                    to="/admin/campaigns/new"
                     className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   >
                     <svg
@@ -62,7 +83,7 @@ export default function AdminIndex() {
                       <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
                     </svg>
                     New Campaign
-                  </a>
+                  </Link>
                 </div>
               </div>
             ) : (

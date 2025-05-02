@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getEmbedUrl, getVideoProvider } from "~/utils/video";
 
 interface VideoEmbedProps {
@@ -11,6 +11,7 @@ export default function VideoEmbed({ videoUrl, className = "", onVideoComplete }
   const embedUrl = getEmbedUrl(videoUrl);
   const provider = getVideoProvider(videoUrl);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     if (!onVideoComplete) return;
@@ -34,6 +35,9 @@ export default function VideoEmbed({ videoUrl, className = "", onVideoComplete }
               if (event.data === 0) {
                 onVideoComplete();
               }
+            },
+            'onReady': () => {
+              setIsLoading(false);
             }
           }
         });
@@ -52,6 +56,9 @@ export default function VideoEmbed({ videoUrl, className = "", onVideoComplete }
         player.on('ended', () => {
           onVideoComplete();
         });
+        player.on('loaded', () => {
+          setIsLoading(false);
+        });
       };
       document.body.appendChild(script);
     }
@@ -67,6 +74,15 @@ export default function VideoEmbed({ videoUrl, className = "", onVideoComplete }
       }
     };
   }, [videoUrl, provider, onVideoComplete]);
+  
+  // Set loading to false after a timeout as fallback
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   if (!embedUrl) {
     return (
@@ -87,7 +103,12 @@ export default function VideoEmbed({ videoUrl, className = "", onVideoComplete }
   }
   
   return (
-    <div className={`relative w-full overflow-hidden rounded-lg ${className}`} style={{ paddingTop: '56.25%' }}>
+    <div className={`relative w-full overflow-hidden rounded-lg shadow-lg ${className}`} style={{ paddingTop: '56.25%' }}>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75 z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      )}
       <iframe
         ref={iframeRef}
         src={enhancedEmbedUrl}
@@ -95,6 +116,7 @@ export default function VideoEmbed({ videoUrl, className = "", onVideoComplete }
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
         title={`${provider} video player`}
+        onLoad={() => setIsLoading(false)}
       ></iframe>
     </div>
   );
@@ -109,6 +131,7 @@ declare global {
         options: {
           events: {
             onStateChange: (event: { data: number }) => void;
+            onReady: () => void;
           };
         }
       ) => void;

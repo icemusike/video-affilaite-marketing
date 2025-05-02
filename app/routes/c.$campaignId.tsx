@@ -1,6 +1,6 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AffiliateFrame from "~/components/AffiliateFrame";
 import VideoEmbed from "~/components/VideoEmbed";
 import { getCampaign } from "~/models/campaign.server";
@@ -25,18 +25,37 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export default function CampaignPage() {
   const { campaign } = useLoaderData<typeof loader>();
   const [showRedirectMessage, setShowRedirectMessage] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const [hasWatched, setHasWatched] = useState(false);
   
   const handleVideoComplete = () => {
     setShowRedirectMessage(true);
+    setHasWatched(true);
     
-    // Redirect to affiliate URL after a short delay
+    // Start countdown
+    setCountdown(5);
+    
+    // Redirect to affiliate URL after countdown
     const sanitizedUrl = sanitizeUrl(campaign.affiliateUrl);
     if (sanitizedUrl) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         window.open(sanitizedUrl, '_blank', 'noopener,noreferrer');
-      }, 1500);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
     }
   };
+  
+  // Handle countdown
+  useEffect(() => {
+    if (showRedirectMessage && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showRedirectMessage, countdown]);
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -54,9 +73,23 @@ export default function CampaignPage() {
             </div>
             
             {showRedirectMessage ? (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-center">
-                <p className="text-blue-700">
-                  Thanks for watching! You're being redirected to the offer page...
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-center animate-pulse">
+                <p className="text-blue-700 font-medium">
+                  Thanks for watching! You'll be redirected to the offer page in {countdown} seconds...
+                </p>
+                <button 
+                  onClick={() => {
+                    window.open(sanitizeUrl(campaign.affiliateUrl), '_blank', 'noopener,noreferrer');
+                  }}
+                  className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Go now
+                </button>
+              </div>
+            ) : hasWatched ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 text-center">
+                <p className="text-green-700">
+                  You've completed watching the video! Check out the offer below.
                 </p>
               </div>
             ) : null}

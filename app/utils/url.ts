@@ -23,3 +23,29 @@ export function sanitizeUrl(url: string): string {
     return '';
   }
 }
+
+// This function could be used to check if a site is likely to have CSP restrictions
+export function mightHaveCspRestrictions(url: string): boolean {
+  if (!url) return false;
+  
+  try {
+    const parsedUrl = new URL(url);
+    // List of domains known to have strict CSP policies
+    const restrictedDomains = [
+      'jvzoo.com',
+      'clickbank.com',
+      'warriorplus.com',
+      'paypal.com',
+      'stripe.com',
+      'facebook.com',
+      'instagram.com'
+    ];
+    
+    return restrictedDomains.some(domain => 
+      parsedUrl.hostname === domain || 
+      parsedUrl.hostname.endsWith(`.${domain}`)
+    );
+  } catch (e) {
+    return false;
+  }
+}
